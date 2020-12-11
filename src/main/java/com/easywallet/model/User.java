@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -28,6 +29,9 @@ public class User implements Serializable {
 
     @Column(name = "phone")
     private String phone;
+
+    @Column(name = "referralCode")
+    private String referralCode;
 
     @Column(name = "profilePic")
     private String profilePic;
@@ -63,6 +67,10 @@ public class User implements Serializable {
     @Column(name="date_created")
     private Date dateCreated;
 
+    @JoinColumn(name = "wallet_account", referencedColumnName = "id")
+    @OneToOne(cascade = CascadeType.ALL)
+    private WalletAccount walletAccountId;
+
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "role_user", joinColumns =
             {@JoinColumn(name = "user_id", referencedColumnName = "id")},
@@ -91,6 +99,8 @@ public class User implements Serializable {
         this.clientSecret = user.getClientSecret();
         this.dateCreated = user.getDateCreated();
         this.transactionPin=user.getTransactionPin();
+        this.walletAccountId=user.getWalletAccountId();
+        this.referralCode=user.getReferralCode();
 
     }
 
@@ -140,6 +150,14 @@ public class User implements Serializable {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getReferralCode() {
+        return referralCode;
+    }
+
+    public void setReferralCode(String referralCode) {
+        this.referralCode = referralCode;
     }
 
     public String getProfilePic() {
@@ -230,11 +248,79 @@ public class User implements Serializable {
         this.dateCreated = dateCreated;
     }
 
+    public WalletAccount getWalletAccountId() {
+        return walletAccountId;
+    }
+
+    public void setWalletAccountId(WalletAccount walletAccountId) {
+        this.walletAccountId = walletAccountId;
+    }
+
     public Set<Role> getRoles() {
         return roles;
     }
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return enabled == user.enabled &&
+                accountNonExpired == user.accountNonExpired &&
+                credentialsNonExpired == user.credentialsNonExpired &&
+                accountNonLocked == user.accountNonLocked &&
+                Objects.equals(id, user.id) &&
+                Objects.equals(firstName, user.firstName) &&
+                Objects.equals(lastName, user.lastName) &&
+                Objects.equals(address, user.address) &&
+                Objects.equals(email, user.email) &&
+                Objects.equals(phone, user.phone) &&
+                Objects.equals(referralCode, user.referralCode) &&
+                Objects.equals(profilePic, user.profilePic) &&
+                Objects.equals(username, user.username) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(transactionPin, user.transactionPin) &&
+                Objects.equals(clientId, user.clientId) &&
+                Objects.equals(clientSecret, user.clientSecret) &&
+                Objects.equals(dateCreated, user.dateCreated) &&
+                Objects.equals(walletAccountId, user.walletAccountId) &&
+                Objects.equals(roles, user.roles);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, firstName, lastName, address, email, phone, referralCode, profilePic, username, password, transactionPin, clientId, clientSecret, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, dateCreated, walletAccountId, roles);
+    }
+
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", address='" + address + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", referralCode='" + referralCode + '\'' +
+                ", profilePic='" + profilePic + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", transactionPin='" + transactionPin + '\'' +
+                ", clientId='" + clientId + '\'' +
+                ", clientSecret='" + clientSecret + '\'' +
+                ", enabled=" + enabled +
+                ", accountNonExpired=" + accountNonExpired +
+                ", credentialsNonExpired=" + credentialsNonExpired +
+                ", accountNonLocked=" + accountNonLocked +
+                ", dateCreated=" + dateCreated +
+                ", walletAccountId=" + walletAccountId +
+                ", roles=" + roles +
+                '}';
     }
 }

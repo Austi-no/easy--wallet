@@ -11,10 +11,11 @@ public class CustomMessages {
     public static String AlreadyExist = "Record Already Exist";
     public static String Failed = "Failed";
     public static String Exists = "Record already exists";
-    public static String InsufficientFunds = "Amount to withdraw is higher than account balance";
+    public static String InsufficientFunds = "Insufficient Funds!";
     public static String FundAccount = "Please fund your Account Or Enter a valid Amount";
 
-    public static String IncorrectPin = "Invalid Transaction Pin";
+    public static String IncorrectPin = "Invalid Transaction Pin!";
 
 
+    public static String incorrectPin ="the pin you enter is incorrect";
 }

@@ -1,12 +1,11 @@
 package com.easywallet.controller;
 
+import com.easywallet.Dto.LoginRequestDto;
+import com.easywallet.Dto.UserDto;
 import com.easywallet.constants.ApiResponse;
 import com.easywallet.constants.CustomMessages;
 import com.easywallet.exceptions.RecordAlreadyPresentException;
-import com.easywallet.model.OauthClientDetails;
-import com.easywallet.model.Role;
-import com.easywallet.model.RoleUser;
-import com.easywallet.model.User;
+import com.easywallet.model.*;
 import com.easywallet.service.OauthService;
 import io.swagger.annotations.ApiOperation;
 import org.modelmapper.ModelMapper;
@@ -59,29 +58,27 @@ public class UserController {
 
     ModelMapper modelMapper = new ModelMapper();
 
+    @ApiOperation(value = "Authenticate user role")
+    @PostMapping("/authenticateAndGetUserRoles")
+    public ResponseEntity authenticateUser(@RequestBody LoginRequestDto loginRequest) {
 
-//    @PostMapping("/authenticateAndGetUserRoles")
-//    public ResponseEntity authenticateUser(@RequestBody LoginRequestDto loginRequest) {
-//
-//        boolean create = new File(context.getRealPath(File.separator + "WEB-INF" + File.separator + "uploads" + File.separator)).mkdir();
-//
-//        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
-//        Authentication authentication = this.authenticationManager.authenticate(authenticationToken);
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//
-//        User principal = (User) authentication.getPrincipal();
-//
-//        UserDto userDTO = modelMapper.map(principal, UserDto.class);
-//
-//        //get userID from database
-//
-//        Optional<User> userIdToGet = oauthService.getUserByUsername(principal.getUsername());
-//
-//
-//        userDTO.setId(userIdToGet.get().getId());
-//        return ResponseEntity.ok().body(new ApiResponse<>(CustomMessages.Success, userDTO));
-//    }
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+        Authentication authentication = this.authenticationManager.authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+
+        User principal = (User) authentication.getPrincipal();
+
+        UserDto userDTO = modelMapper.map(principal, UserDto.class);
+
+        //get userID from database
+
+        Optional<User> userIdToGet = oauthService.getUserByUsername(principal.getUsername());
+
+
+        userDTO.setId(userIdToGet.get().getId());
+        return ResponseEntity.ok().body(new ApiResponse<>(CustomMessages.Success, userDTO));
+    }
 
 
     @ApiOperation(value = "Get All Active Users")
@@ -107,6 +104,10 @@ public class UserController {
                     return ResponseEntity.badRequest().body(Collections.singletonMap("message", "Null Object was submitted"));
                 }
 
+
+
+
+
                 String encodedPassword = passwordEncoder.encode(userRecord.getPassword());
 
                 userRecord.setPassword(encodedPassword);
@@ -116,6 +117,58 @@ public class UserController {
                 userRecord.setCredentialsNonExpired(true);
                 userRecord.setAccountNonLocked(true);
 
+                String userPhone=userRecord.getPhone();
+                Random r = new Random();
+                String randomNumber= String.format("%03d", (Object) Integer.valueOf(r.nextInt(222)));
+                String generatedPin=randomNumber;
+
+                String additionalNo=userPhone;
+                int phraseLength=additionalNo.length();
+                String twoNumbers= additionalNo.substring(phraseLength/2-1, phraseLength/2+1);
+                String pin = generatedPin+ twoNumbers;
+
+                WalletAccount walletAccount= new WalletAccount();
+                walletAccount.setAccountBalance(0.0);
+                walletAccount.setLastDeposit(0.0);
+
+                String userPhoneNumber= userRecord.getPhone();
+                String lastFourDIGITS="";
+
+                if (userPhoneNumber.length()>4){
+                    lastFourDIGITS=userPhoneNumber.substring(userPhoneNumber.length()-4);
+                }else {
+                    lastFourDIGITS=userPhoneNumber;
+                }
+                if (lastFourDIGITS !=null){
+                    ThreadLocalRandom random=
+                    ThreadLocalRandom.current();
+                    Long number =random.nextLong(10_000_0L, 100_000_0L);
+                    String generatedNumber= number.toString();
+                    String newAccountNumber=generatedNumber + lastFourDIGITS;
+                    walletAccount.setAccountNumber(newAccountNumber);
+                }
+                String alphabet = "1A2B3C4D5E6F7G9H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z7";
+                // create random string builder
+                StringBuilder sb = new StringBuilder();
+                // create an object of Random class
+                Random random = new Random();
+                // specify length of random string
+                int length = 5;
+                for (int i = 0; i < length; i++) {
+                    // generate random index number
+                    int index = random.nextInt(alphabet.length());
+                    // get character specified by index
+                    // from the string
+                    char randomChar = alphabet.charAt(index);
+                    // append the character to string builder
+                    sb.append(randomChar);
+                }
+
+                String randomString = sb.toString();
+
+                userRecord.setReferralCode(randomString);
+                userRecord.setTransactionPin(pin);
+                userRecord.setWalletAccountId( walletAccount);
                 OauthClientDetails clientDetails = new OauthClientDetails();
                 clientDetails.setAccessTokenValidity(3600);
                 clientDetails.setAutoapprove("");
@@ -145,6 +198,7 @@ public class UserController {
         } catch (RecordAlreadyPresentException e) {
             return ResponseEntity.ok(new ApiResponse<>(CustomMessages.Failed, "User with username: " + userRecord.getUsername() + " already exists!!"));
         }
+
     }
 
     @ApiOperation(value = "Edit User Details")
@@ -264,6 +318,5 @@ public class UserController {
         return ResponseEntity.ok().body(new ApiResponse<>(CustomMessages.Success, savedRu));
 
     }
-
 
 }

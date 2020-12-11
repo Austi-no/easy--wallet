@@ -2,16 +2,16 @@ package com.easywallet.Dto;
 
 import com.easywallet.model.Permission;
 import com.easywallet.model.Role;
+import com.easywallet.model.WalletAccount;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class UserDto {
     private Long id;
 
-    private String surname;
-
-    private String middleName;
+    private String firstName;
 
     private String lastName;
 
@@ -25,7 +25,11 @@ public class UserDto {
 
     private String username;
 
+    private String referralCode;
+
     private Date dateCreated;
+
+    private WalletAccount walletAccount;
 
     private List<Role> roles;
 
@@ -43,20 +47,12 @@ public class UserDto {
         this.id = id;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public String getMiddleName() {
-        return middleName;
-    }
-
-    public void setMiddleName(String middleName) {
-        this.middleName = middleName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public String getLastName() {
@@ -83,6 +79,14 @@ public class UserDto {
         this.email = email;
     }
 
+    public String getTransactionPin() {
+        return transactionPin;
+    }
+
+    public void setTransactionPin(String transactionPin) {
+        this.transactionPin = transactionPin;
+    }
+
     public String getPhone() {
         return phone;
     }
@@ -99,6 +103,14 @@ public class UserDto {
         this.username = username;
     }
 
+    public String getReferralCode() {
+        return referralCode;
+    }
+
+    public void setReferralCode(String referralCode) {
+        this.referralCode = referralCode;
+    }
+
     public Date getDateCreated() {
         return dateCreated;
     }
@@ -107,12 +119,12 @@ public class UserDto {
         this.dateCreated = dateCreated;
     }
 
-    public List<Permission> getPermissions() {
-        return permissions;
+    public WalletAccount getWalletAccount() {
+        return walletAccount;
     }
 
-    public void setPermissions(List<Permission> permissions) {
-        this.permissions = permissions;
+    public void setWalletAccount(WalletAccount walletAccount) {
+        this.walletAccount = walletAccount;
     }
 
     public List<Role> getRoles() {
@@ -123,66 +135,55 @@ public class UserDto {
         this.roles = roles;
     }
 
-    public String getTransactionPin() {
-        return transactionPin;
+    public List<Permission> getPermissions() {
+        return permissions;
     }
 
-    public void setTransactionPin(String transactionPin) {
-        this.transactionPin = transactionPin;
+    public void setPermissions(List<Permission> permissions) {
+        this.permissions = permissions;
     }
+
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         UserDto userDto = (UserDto) o;
-
-        if (id != null ? !id.equals(userDto.id) : userDto.id != null) return false;
-        if (surname != null ? !surname.equals(userDto.surname) : userDto.surname != null) return false;
-        if (middleName != null ? !middleName.equals(userDto.middleName) : userDto.middleName != null) return false;
-        if (lastName != null ? !lastName.equals(userDto.lastName) : userDto.lastName != null) return false;
-        if (address != null ? !address.equals(userDto.address) : userDto.address != null) return false;
-        if (email != null ? !email.equals(userDto.email) : userDto.email != null) return false;
-        if (transactionPin != null ? !transactionPin.equals(userDto.transactionPin) : userDto.transactionPin != null)
-            return false;
-        if (phone != null ? !phone.equals(userDto.phone) : userDto.phone != null) return false;
-        if (username != null ? !username.equals(userDto.username) : userDto.username != null) return false;
-        if (dateCreated != null ? !dateCreated.equals(userDto.dateCreated) : userDto.dateCreated != null) return false;
-        if (roles != null ? !roles.equals(userDto.roles) : userDto.roles != null) return false;
-        return permissions != null ? permissions.equals(userDto.permissions) : userDto.permissions == null;
+        return Objects.equals(id, userDto.id) &&
+                Objects.equals(firstName, userDto.firstName) &&
+                Objects.equals(lastName, userDto.lastName) &&
+                Objects.equals(address, userDto.address) &&
+                Objects.equals(email, userDto.email) &&
+                Objects.equals(transactionPin, userDto.transactionPin) &&
+                Objects.equals(phone, userDto.phone) &&
+                Objects.equals(username, userDto.username) &&
+                Objects.equals(referralCode, userDto.referralCode) &&
+                Objects.equals(dateCreated, userDto.dateCreated) &&
+                Objects.equals(walletAccount, userDto.walletAccount) &&
+                Objects.equals(roles, userDto.roles) &&
+                Objects.equals(permissions, userDto.permissions);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (surname != null ? surname.hashCode() : 0);
-        result = 31 * result + (middleName != null ? middleName.hashCode() : 0);
-        result = 31 * result + (lastName != null ? lastName.hashCode() : 0);
-        result = 31 * result + (address != null ? address.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (transactionPin != null ? transactionPin.hashCode() : 0);
-        result = 31 * result + (phone != null ? phone.hashCode() : 0);
-        result = 31 * result + (username != null ? username.hashCode() : 0);
-        result = 31 * result + (dateCreated != null ? dateCreated.hashCode() : 0);
-        result = 31 * result + (roles != null ? roles.hashCode() : 0);
-        result = 31 * result + (permissions != null ? permissions.hashCode() : 0);
-        return result;
+
+        return Objects.hash(id, firstName, lastName, address, email, transactionPin, phone, username, referralCode, dateCreated, walletAccount, roles, permissions);
     }
 
     @Override
     public String toString() {
         return "UserDto{" +
                 "id=" + id +
-                ", surname='" + surname + '\'' +
-                ", middleName='" + middleName + '\'' +
+                ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", address='" + address + '\'' +
                 ", email='" + email + '\'' +
                 ", transactionPin='" + transactionPin + '\'' +
                 ", phone='" + phone + '\'' +
                 ", username='" + username + '\'' +
+                ", referralCode='" + referralCode + '\'' +
                 ", dateCreated=" + dateCreated +
+                ", walletAccount=" + walletAccount +
                 ", roles=" + roles +
                 ", permissions=" + permissions +
                 '}';
