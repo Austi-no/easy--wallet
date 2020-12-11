@@ -7,6 +7,8 @@ import com.easywallet.exceptions.RecordNotFoundException;
 import com.easywallet.model.User;
 import com.easywallet.model.WalletAccount;
 import com.easywallet.model.ZlogWalletAccount;
+import com.easywallet.service.Mail.Mail;
+import com.easywallet.service.Mail.MailService;
 import com.easywallet.service.WalletService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ public class WalletAccountController {
 
     @Autowired
     private WalletService walletService;
+
+    @Autowired
+    private MailService mailService;
 
     @ApiOperation("To return all customer wallet Details")
     @GetMapping("/wallet")
@@ -90,6 +95,16 @@ public class WalletAccountController {
             log.setStatus("Completed!");
             log.setUserId(user.get());
             walletService.getZlogWalletAccountRepository().save(log);
+
+            if (user.get().getEmail() != null) {
+                Mail mail = new Mail();
+                mail.setMailFrom("noreply@easywallet.com");
+                mail.setMailTo(user.get().getEmail());
+                mail.setMailSubject("Easy Wallet | Deposit [Credit: NGN" + depositAmount+ "]");
+                mail.setMailContent("Hi" + user.get().getLastName() + " " + user.get().getFirstName() + "  " + "\n\n"
+                        + "Your Account has been credited with "+depositAmount+"\n\nThanks for your patronage\n You can visit us @ www.easywallet.com");
+                mailService.sendEmail(mail);
+            }
 
             return ResponseEntity.ok(new ApiResponse<>(CustomMessages.Success, newUser));
         } else {

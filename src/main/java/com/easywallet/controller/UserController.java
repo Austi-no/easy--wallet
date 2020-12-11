@@ -6,6 +6,8 @@ import com.easywallet.constants.ApiResponse;
 import com.easywallet.constants.CustomMessages;
 import com.easywallet.exceptions.RecordAlreadyPresentException;
 import com.easywallet.model.*;
+import com.easywallet.service.Mail.Mail;
+import com.easywallet.service.Mail.MailService;
 import com.easywallet.service.OauthService;
 import io.swagger.annotations.ApiOperation;
 import org.modelmapper.ModelMapper;
@@ -49,7 +51,8 @@ public class UserController {
     @Autowired
     ServletContext context;
 
-
+    @Autowired
+    private MailService mailService;
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -105,9 +108,6 @@ public class UserController {
                 }
 
 
-
-
-
                 String encodedPassword = passwordEncoder.encode(userRecord.getPassword());
 
                 userRecord.setPassword(encodedPassword);
@@ -117,34 +117,34 @@ public class UserController {
                 userRecord.setCredentialsNonExpired(true);
                 userRecord.setAccountNonLocked(true);
 
-                String userPhone=userRecord.getPhone();
+                String userPhone = userRecord.getPhone();
                 Random r = new Random();
-                String randomNumber= String.format("%03d", (Object) Integer.valueOf(r.nextInt(222)));
-                String generatedPin=randomNumber;
+                String randomNumber = String.format("%03d", (Object) Integer.valueOf(r.nextInt(222)));
+                String generatedPin = randomNumber;
 
-                String additionalNo=userPhone;
-                int phraseLength=additionalNo.length();
-                String twoNumbers= additionalNo.substring(phraseLength/2-1, phraseLength/2+1);
-                String pin = generatedPin+ twoNumbers;
+                String additionalNo = userPhone;
+                int phraseLength = additionalNo.length();
+                String twoNumbers = additionalNo.substring(phraseLength / 2 - 1, phraseLength / 2 + 1);
+                String pin = generatedPin + twoNumbers;
 
-                WalletAccount walletAccount= new WalletAccount();
+                WalletAccount walletAccount = new WalletAccount();
                 walletAccount.setAccountBalance(0.0);
                 walletAccount.setLastDeposit(0.0);
 
-                String userPhoneNumber= userRecord.getPhone();
-                String lastFourDIGITS="";
+                String userPhoneNumber = userRecord.getPhone();
+                String lastFourDIGITS = "";
 
-                if (userPhoneNumber.length()>4){
-                    lastFourDIGITS=userPhoneNumber.substring(userPhoneNumber.length()-4);
-                }else {
-                    lastFourDIGITS=userPhoneNumber;
+                if (userPhoneNumber.length() > 4) {
+                    lastFourDIGITS = userPhoneNumber.substring(userPhoneNumber.length() - 4);
+                } else {
+                    lastFourDIGITS = userPhoneNumber;
                 }
-                if (lastFourDIGITS !=null){
-                    ThreadLocalRandom random=
-                    ThreadLocalRandom.current();
-                    Long number =random.nextLong(10_000_0L, 100_000_0L);
-                    String generatedNumber= number.toString();
-                    String newAccountNumber=generatedNumber + lastFourDIGITS;
+                if (lastFourDIGITS != null) {
+                    ThreadLocalRandom random =
+                            ThreadLocalRandom.current();
+                    Long number = random.nextLong(10_000_0L, 100_000_0L);
+                    String generatedNumber = number.toString();
+                    String newAccountNumber = generatedNumber + lastFourDIGITS;
                     walletAccount.setAccountNumber(newAccountNumber);
                 }
                 String alphabet = "1A2B3C4D5E6F7G9H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z7";
@@ -168,7 +168,7 @@ public class UserController {
 
                 userRecord.setReferralCode(randomString);
                 userRecord.setTransactionPin(pin);
-                userRecord.setWalletAccountId( walletAccount);
+                userRecord.setWalletAccountId(walletAccount);
                 OauthClientDetails clientDetails = new OauthClientDetails();
                 clientDetails.setAccessTokenValidity(3600);
                 clientDetails.setAutoapprove("");
@@ -189,10 +189,17 @@ public class UserController {
 
                 oauthService.saveClientDetails(clientDetails);
 
+                if (userRecord.getEmail() != null) {
+                    Mail mail = new Mail();
+                    mail.setMailFrom("noreply@easywallet.com");
+                    mail.setMailTo(userRecord.getEmail());
+                    mail.setMailSubject("Easy Wallet");
+                    mail.setMailContent("Welcome To Easy Wallet " + userRecord.getLastName() + " " + userRecord.getFirstName() + "  " + "\n\n"
+                            + "Your Account has been created successfully!\n\nThanks for your patronage\n You can visit us @ www.easywallet.com");
+                    mailService.sendEmail(mail);
+                }
 
                 return ResponseEntity.ok(new ApiResponse<>(CustomMessages.Success, userRecord));
-
-
             } else
                 throw new RecordAlreadyPresentException("User with username: " + userRecord.getUsername() + " already exists!!");
         } catch (RecordAlreadyPresentException e) {
