@@ -7,8 +7,6 @@ import com.easywallet.exceptions.RecordNotFoundException;
 import com.easywallet.model.User;
 import com.easywallet.model.WalletAccount;
 import com.easywallet.model.ZlogWalletAccount;
-import com.easywallet.service.Mail.Mail;
-import com.easywallet.service.Mail.MailService;
 import com.easywallet.service.WalletService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +28,7 @@ public class WalletAccountController {
     private WalletService walletService;
 
     @Autowired
-    private MailService mailService;
+
 
     @ApiOperation("To return all customer wallet Details")
     @GetMapping("/wallet")
@@ -95,16 +93,6 @@ public class WalletAccountController {
             log.setStatus("Completed!");
             log.setUserId(user.get());
             walletService.getZlogWalletAccountRepository().save(log);
-
-            if (user.get().getEmail() != null) {
-                Mail mail = new Mail();
-                mail.setMailFrom("noreply@easywallet.com");
-                mail.setMailTo(user.get().getEmail());
-                mail.setMailSubject("Easy Wallet | Deposit [Credit: NGN" + depositAmount+ "]");
-                mail.setMailContent("Hi" + user.get().getLastName() + " " + user.get().getFirstName() + "  " + "\n\n"
-                        + "Your Account has been credited with "+depositAmount+"\n\nThanks for your patronage\n You can visit us @ www.easywallet.com");
-                mailService.sendEmail(mail);
-            }
 
             return ResponseEntity.ok(new ApiResponse<>(CustomMessages.Success, newUser));
         } else {
@@ -200,6 +188,21 @@ public class WalletAccountController {
                     double balAfterTransfer = round((oldBal + amountToTransfer) * 100.0) / 100.0;
                     recipient.get().getWalletAccountId().setAccountBalance(balAfterTransfer);
                     walletService.getUserDetailRepository().save(recipient.get());
+
+                    ZlogWalletAccount log = new ZlogWalletAccount();
+                    String action = "Transfer";
+                    String description = "A transfer of " + amountToTransfer + " was made from your Account to " + recipientAcctNo;
+                    log.setAmount(amountToTransfer);
+                    log.setCurrentAccountBalance(user.get().getWalletAccountId().getAccountBalance());
+                    log.setDateCreated(new Date());
+                    log.setDescription(description);
+                    log.setService(action);
+                    log.setStatus("Completed!");
+                    log.setServiceCharge(serviceCharge);
+                    log.setUserId(user.get());
+
+                    walletService.getZlogWalletAccountRepository().save(log);
+
                 }
 
                 return ResponseEntity.ok(new ApiResponse<>(CustomMessages.Success));

@@ -6,8 +6,6 @@ import com.easywallet.constants.ApiResponse;
 import com.easywallet.constants.CustomMessages;
 import com.easywallet.exceptions.RecordAlreadyPresentException;
 import com.easywallet.model.*;
-import com.easywallet.service.Mail.Mail;
-import com.easywallet.service.Mail.MailService;
 import com.easywallet.service.OauthService;
 import io.swagger.annotations.ApiOperation;
 import org.modelmapper.ModelMapper;
@@ -26,7 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletContext;
-import java.io.File;
+//import java.io.File;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -51,8 +49,7 @@ public class UserController {
     @Autowired
     ServletContext context;
 
-    @Autowired
-    private MailService mailService;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -186,18 +183,7 @@ public class UserController {
 
                 oauthService.saveUser(userRecord);
 
-
                 oauthService.saveClientDetails(clientDetails);
-
-                if (userRecord.getEmail() != null) {
-                    Mail mail = new Mail();
-                    mail.setMailFrom("noreply@easywallet.com");
-                    mail.setMailTo(userRecord.getEmail());
-                    mail.setMailSubject("Easy Wallet");
-                    mail.setMailContent("Welcome To Easy Wallet " + userRecord.getLastName() + " " + userRecord.getFirstName() + "  " + "\n\n"
-                            + "Your Account has been created successfully!\n\nThanks for your patronage\n You can visit us @ www.easywallet.com");
-                    mailService.sendEmail(mail);
-                }
 
                 return ResponseEntity.ok(new ApiResponse<>(CustomMessages.Success, userRecord));
             } else
