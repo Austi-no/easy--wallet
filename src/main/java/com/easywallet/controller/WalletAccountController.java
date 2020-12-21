@@ -44,8 +44,13 @@ public class WalletAccountController {
 
     @ApiOperation("To return a user wallet Details")
     @GetMapping("/{accountNo}")
-    public Optional<User> getAccountNo(@PathVariable("accountNo") String accountNo) {
-        return walletService.getUserDetailRepository().findByWalletAccountId_AccountNumber(accountNo);
+    public ResponseEntity getAccountNo(@PathVariable("accountNo") String accountNo) {
+        Optional<User> user=walletService.getUserDetailRepository().findByWalletAccountId_AccountNumber(accountNo);
+        if (user.isPresent()) {
+            return  ResponseEntity.ok(new ApiResponse<>(CustomMessages.Success, user.get()));
+
+        }
+        return  ResponseEntity.ok(new ApiResponse<>(CustomMessages.NotFound));
     }
 
     @ApiOperation("To return a user wallet Details")
@@ -118,7 +123,9 @@ public class WalletAccountController {
         Optional<User> user = walletService.getUserDetailRepository().findUsersById(userId);
         if (user.get().getTransactionPin().equalsIgnoreCase(transactionPin)) {
             double userWalletBalance = user.get().getWalletAccountId().getAccountBalance();
-            if (userWalletBalance > 0 && userWalletBalance > amountToWithdraw) {
+            double userBalanceWithCharge=amountToWithdraw + serviceCharge ;
+//            double accountLimitbalance= userBalanceWithCharge;
+            if (userWalletBalance > userBalanceWithCharge && userWalletBalance > amountToWithdraw) {
                 double amountAfterCharge = amountToWithdraw + serviceCharge;
                 double newBalance = round((userWalletBalance - amountAfterCharge) * 100.0) / 100.0;
                 user.get().getWalletAccountId().setAccountBalance(newBalance);
@@ -175,7 +182,7 @@ public class WalletAccountController {
         Optional<User> user = walletService.getUserDetailRepository().findUsersById(userId);
         double currentUserBalance = user.get().getWalletAccountId().getAccountBalance();
         if (user.get().getTransactionPin().equalsIgnoreCase(transactionPin) && user.isPresent()) {
-            if (amountToTransfer < currentUserBalance) {
+            if (amountToTransfer < currentUserBalance && user.get().getId() != recipientUserId) {
                 double oldBalance = user.get().getWalletAccountId().getAccountBalance();
                 double balanceAfterTransfer = oldBalance - amountToTransfer;
                 double newBalance = round((balanceAfterTransfer - serviceCharge) * 100.0) / 100.0;
